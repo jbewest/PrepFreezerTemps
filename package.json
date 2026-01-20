@@ -1,0 +1,16 @@
+{
+  "name": "prep-freezer-temps",
+  "version": "1.0.0",
+  "description": "Process freezer temperature CSV files and generate Excel logs",
+  "main": "processFreezerTemps.js",
+  "scripts": {
+    "start": "node processFreezerTemps.js"
+  },
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "exceljs": "^4.4.0"
+  },
+  "keywords": ["freezer", "temperature", "csv", "excel"],
+  "author": "",
+  "license": "ISC"
+}

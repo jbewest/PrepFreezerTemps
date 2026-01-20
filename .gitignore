@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+# package-lock.json - Keep this file for consistent dependency versions
+
+# Generated output files
+*.xlsx
+lamb freezer output for log_*.xlsx
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
