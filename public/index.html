@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freezer Temperature Log</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    .drop-zone {
+      border: 2px dashed #888;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      background: #f8f8f8;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #333;
+      background: #eee;
+    }
+    .drop-zone input { display: none; }
+    .results-section { margin-top: 2rem; display: none; }
+    .results-section.visible { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    th { background: #e8e8e8; font-weight: 600; }
+    .btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn:hover { background: #555; }
+    .btn:disabled { background: #999; cursor: not-allowed; }
+    .error { color: #c00; margin-top: 1rem; }
+    .loading { color: #666; margin-top: 1rem; }
+    .empty-msg { color: #666; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Freezer Temperature Log</h1>
+  <p>Drop a CSV file below (or click to choose). Only 9:01 AM and 5:01 PM readings are included.</p>
+
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".csv,text/csv">
+    <span id="dropLabel">Drag and drop a CSV file here, or click to select</span>
+  </div>
+
+  <div class="loading" id="loading" style="display: none;">Processing…</div>
+  <div class="error" id="error" style="display: none;"></div>
+
+  <div class="results-section" id="resultsSection">
+    <h2>Results</h2>
+    <div class="empty-msg" id="emptyMsg" style="display: none;">No 9:01 AM or 5:01 PM readings found.</div>
+    <div id="tableWrap"></div>
+    <button type="button" class="btn" id="downloadBtn" disabled>Download XLSX</button>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const dropLabel = document.getElementById("dropLabel");
+    const loading = document.getElementById("loading");
+    const error = document.getElementById("error");
+    const resultsSection = document.getElementById("resultsSection");
+    const emptyMsg = document.getElementById("emptyMsg");
+    const tableWrap = document.getElementById("tableWrap");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    let currentResults = [];
+
+    function showError(msg) {
+      error.textContent = msg;
+      error.style.display = "block";
+      loading.style.display = "none";
+    }
+
+    function hideError() {
+      error.style.display = "none";
+    }
+
+    function setLoading(on) {
+      loading.style.display = on ? "block" : "none";
+      if (on) hideError();
+    }
+
+    function renderTable(results) {
+      if (!results.length) {
+        emptyMsg.style.display = "block";
+        tableWrap.innerHTML = "";
+        downloadBtn.disabled = true;
+        return;
+      }
+      emptyMsg.style.display = "none";
+      const headers = ["Date", "Time", "Unit/Freezer ID", "Frozen Storage Temp (°F)", "Status", "Notes / Corrective Actions"];
+      let html = "<table><thead><tr>";
+      headers.forEach((h) => { html += "<th>" + escapeHtml(h) + "</th>"; });
+      html += "</tr></thead><tbody>";
+      results.forEach((r) => {
+        html += "<tr>";
+        html += "<td>" + escapeHtml(r.date) + "</td>";
+        html += "<td>" + escapeHtml(r.time) + "</td>";
+        html += "<td>BASEMENT-001</td>";
+        html += "<td>" + escapeHtml(String(r.temperature)) + "</td>";
+        html += "<td>OK</td>";
+        html += "<td></td>";
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      tableWrap.innerHTML = html;
+      downloadBtn.disabled = false;
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function processFile(file) {
+      if (!file || !file.name.toLowerCase().endsWith(".csv")) {
+        showError("Please choose a CSV file.");
+        return;
+      }
+      setLoading(true);
+      resultsSection.classList.add("visible");
+      currentResults = [];
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch("/process", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setLoading(false);
+          if (data.ok) {
+            currentResults = data.results || [];
+            renderTable(currentResults);
+          } else {
+            showError(data.error || "Processing failed.");
+          }
+        })
+        .catch(() => {
+          setLoading(false);
+          showError("Network error. Is the server running?");
+        });
+    }
+
+    downloadBtn.addEventListener("click", () => {
+      if (!currentResults.length) return;
+      fetch("/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ results: currentResults }),
+      })
+        .then((res) => {
+          if (!res.ok) return res.json().then((d) => Promise.reject(d));
+          const disposition = res.headers.get("Content-Disposition");
+          let filename = "lamb freezer output for log.xlsx";
+          if (disposition) {
+            const match = disposition.match(/filename="?([^";]+)"?/);
+            if (match) filename = match[1].trim();
+          }
+          return res.blob().then((blob) => ({ blob, filename }));
+        })
+        .then(({ blob, filename }) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        })
+        .catch((data) => {
+          if (data && data.error) showError(data.error);
+          else showError("Download failed.");
+        });
+    });
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) processFile(file);
+      fileInput.value = "";
+    });
+  </script>
+</body>
+</html>

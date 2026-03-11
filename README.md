@@ -28,9 +28,10 @@ Before running this script, you need:
 - **If not installed:** Download from [nodejs.org](https://nodejs.org/)
 
 ### 2. Required NPM Packages
-The script uses three external libraries:
+The project uses:
 - `csv-parser` - Reads CSV files
 - `exceljs` - Creates Excel files
+- `express` and `multer` - For the web app (file upload)
 - `fs` and `path` - Built into Node.js (no installation needed)
 
 ## Installation
@@ -61,14 +62,27 @@ This creates a `package.json` file to track your dependencies.
 Run this command to install the required packages:
 
 ```bash
-npm install csv-parser exceljs
+npm install
 ```
 
-**What this does:** Downloads the two libraries and their dependencies into a `node_modules` folder.
+**What this does:** Downloads the libraries and their dependencies into a `node_modules` folder.
 
 You should see output confirming the installation and a new `node_modules` folder appear.
 
-## How to Run the Script
+## How to Run
+
+### Option 1: Web app (drag and drop)
+
+Run the server, then open the app in your browser:
+
+```bash
+npm install
+npm run server
+```
+
+Open **http://localhost:3000**. Drag and drop a CSV file (or click to select), view the results in the table, and use **Download XLSX** to get the same Excel format as the CLI.
+
+### Option 2: Command-line script
 
 ### Basic Command Structure
 
@@ -223,7 +237,7 @@ node processFreezerTemps.js your_file.csv
 
 **Solution:** Install the required packages:
 ```bash
-npm install csv-parser exceljs
+npm install
 ```
 
 ---
@@ -317,10 +331,9 @@ Output goes:  C:\Freezer\Data\lamb freezer output for log_20250125_143022.xlsx
 ┌─────────────────────────────────────────────────────┐
 │  FREEZER TEMP PROCESSOR - QUICK START               │
 ├─────────────────────────────────────────────────────┤
-│  1. Install Node.js (nodejs.org)                    │
-│  2. npm install csv-parser exceljs                  │
-│  3. node processFreezerTemps.js your_file.csv       │
-│  4. Find output Excel in same folder as CSV         │
+│  Web app:  npm run server  →  http://localhost:3000  │
+│  CLI:      node processFreezerTemps.js your_file.csv│
+│  Install:  npm install                              │
 └─────────────────────────────────────────────────────┘
 
 CSV Format Required:
