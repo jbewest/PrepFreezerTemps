@@ -73,14 +73,33 @@ You should see output confirming the installation and a new `node_modules` folde
 
 ### Option 1: Web app (drag and drop)
 
-Run the server, then open the app in your browser:
+The web app lets you upload a CSV in your browser, see the results in a table, and download an Excel file—no command line needed after the server is running.
+
+**Step 1: Install dependencies** (once per project)
 
 ```bash
 npm install
+```
+
+**Step 2: Start the server**
+
+```bash
 npm run server
 ```
 
-Open **http://localhost:3000**. Drag and drop a CSV file (or click to select), view the results in the table, and use **Download XLSX** to get the same Excel format as the CLI.
+You should see: `Server running at http://localhost:3000`. Leave this terminal window open while you use the app.
+
+**Step 3: Open the app in your browser**
+
+Go to: **http://localhost:3000**
+
+**Step 4: Use the app**
+
+- **Upload:** Drag and drop a CSV file onto the drop zone, or click the zone to choose a file.
+- **View:** The page shows a table of the filtered readings (9:01 AM and 5:01 PM only).
+- **Download:** Click **Download XLSX** to save the same Excel file the CLI would produce (e.g. `lamb freezer output for log_YYYYMMDD_HHMMSS.xlsx`).
+
+To stop the server, press `Ctrl+C` in the terminal.
 
 ### Option 2: Command-line script
 
