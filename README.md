@@ -20,15 +20,19 @@ Think of it like a quality control assistant that takes raw sensor data and turn
 Before running this script, you need:
 
 ### 1. Node.js Installed
+
 - **Version:** Node.js 14.x or higher recommended
 - **Check if installed:** Open a terminal/command prompt and type:
+  
   ```bash
   node --version
   ```
 - **If not installed:** Download from [nodejs.org](https://nodejs.org/)
 
 ### 2. Required NPM Packages
-The project uses:
+
+The script uses three external libraries:
+
 - `csv-parser` - Reads CSV files
 - `exceljs` - Creates Excel files
 - `express` and `multer` - For the web app (file upload)
@@ -101,11 +105,19 @@ node processFreezerTemps.js temps_jan2025.csv
 ### Example 2: CSV in Different Location
 
 **Windows:**
+
 ```bash
 node processFreezerTemps.js "C:\Users\Joel\Documents\FreezerData\temps_jan2025.csv"
 ```
 
+Here is the command I used when i put the inut file in a special folder:
+
+```
+node processFreezerTemps.js "C:\Users\joel\Documents\git\PrepFreezerTemps\input-data\Lamb Freezer_export_202602080001.csv"
+```
+
 **Mac/Linux:**
+
 ```bash
 node processFreezerTemps.js /home/joel/freezer-data/temps_jan2025.csv
 ```
@@ -119,6 +131,7 @@ node processFreezerTemps.js /home/joel/freezer-data/temps_jan2025.csv
 5. Displays success message with file location
 
 **Example Output:**
+
 ```
 Successfully created: C:\Users\Joel\Documents\FreezerData\lamb freezer output for log_20250125_143022.xlsx
 Processed 42 temperature readings.
@@ -143,6 +156,7 @@ Timestamp,Temperature
 ```
 
 **Important Notes:**
+
 - Timestamp format: `M/D/YYYY H:MM` (e.g., `1/5/2025 9:01`)
 - Only readings at exactly **9:01** (AM) or **17:01** (5:01 PM) are included
 - Temperature can have decimals (will be rounded to nearest integer)
@@ -151,12 +165,13 @@ Timestamp,Temperature
 
 The generated Excel file contains these columns:
 
-| Date | Time | Unit/Freezer ID | Frozen Storage Temp (°F) | Status | Notes / Corrective Actions |
-|------|------|-----------------|--------------------------|--------|----------------------------|
-| 1/20/2025 | 9:01 AM | BASEMENT-001 | -3 | OK | |
-| 1/20/2025 | 5:01 PM | BASEMENT-001 | -3 | OK | |
+| Date      | Time    | Unit/Freezer ID | Frozen Storage Temp (°F) | Status | Notes / Corrective Actions |
+| --------- | ------- | --------------- | ------------------------ | ------ | -------------------------- |
+| 1/20/2025 | 9:01 AM | BASEMENT-001    | -3                       | OK     |                            |
+| 1/20/2025 | 5:01 PM | BASEMENT-001    | -3                       | OK     |                            |
 
 **Features:**
+
 - Bold headers
 - Pre-filled "BASEMENT-001" as Freezer ID
 - Pre-filled "OK" status
@@ -189,6 +204,7 @@ node processFreezerTemps.js test_temps.csv
 ### Test 3: Verify Output
 
 **Expected results:**
+
 - Excel file created: `lamb freezer output for log_[timestamp].xlsx`
 - Console shows: `Processed 5 temperature readings.`
 - Only the 9:01 and 17:01 readings should appear (5 total)
@@ -197,6 +213,7 @@ node processFreezerTemps.js test_temps.csv
 ### Test 4: Open the Excel File
 
 Open the generated Excel file and verify:
+
 - ✅ 5 rows of data (3 from 1/23, 2 from 1/24, 0 from 1/25 5:01 PM since it wasn't in test data)
 - ✅ Times show as "9:01 AM" and "5:01 PM"
 - ✅ Temperatures are rounded integers (-3, -3, -2, -3, -2)
@@ -210,6 +227,7 @@ Open the generated Excel file and verify:
 **Problem:** No CSV file specified
 
 **Solution:** Provide the CSV filename:
+
 ```bash
 node processFreezerTemps.js your_file.csv
 ```
@@ -221,9 +239,11 @@ node processFreezerTemps.js your_file.csv
 **Problem:** Script can't locate your CSV file
 
 **Solutions:**
+
 1. Make sure the file exists in the specified location
 2. Check spelling of the filename
 3. Use quotes around paths with spaces:
+   
    ```bash
    node processFreezerTemps.js "my folder/temps.csv"
    ```
@@ -236,6 +256,7 @@ node processFreezerTemps.js your_file.csv
 **Problem:** Dependencies not installed
 
 **Solution:** Install the required packages:
+
 ```bash
 npm install
 ```
@@ -247,13 +268,16 @@ npm install
 **Possible causes:**
 
 1. **CSV has wrong column names**
+   
    - Check that columns contain "Timestamp" and "Temperature" (case-insensitive)
 
 2. **No readings at 9:01 or 17:01**
+   
    - Verify your CSV has times exactly at 9:01 or 17:01
    - Script ignores 9:00, 9:02, 17:00, 17:02, etc.
 
 3. **Invalid timestamp format**
+   
    - Must be: `M/D/YYYY H:MM` format
    - Example: `1/25/2025 9:01` ✅
    - Not: `01/25/2025 09:01:00` ❌
@@ -263,6 +287,7 @@ npm install
 ### Temperatures Look Wrong
 
 **Check these:**
+
 - Script rounds to nearest integer: -2.4 becomes -2, -2.6 becomes -3
 - Negative temperatures are normal for freezers
 - Temperature column must contain numbers (text values will be skipped)
@@ -274,6 +299,7 @@ npm install
 **Problem:** Can't write to output location
 
 **Solutions:**
+
 - Ensure you have write permissions in the folder
 - Try running terminal/command prompt as administrator (Windows)
 - Check that the CSV file isn't open in Excel (may lock the folder)
@@ -283,11 +309,13 @@ npm install
 ### Change Freezer ID
 
 Find this line (around line 122):
+
 ```javascript
 freezerId: 'BASEMENT-001',
 ```
 
 Change to your freezer name:
+
 ```javascript
 freezerId: 'GARAGE-002',
 ```
@@ -295,11 +323,13 @@ freezerId: 'GARAGE-002',
 ### Change Target Times
 
 Find these lines (around line 76):
+
 ```javascript
 if ((hourNum === 9 && minuteNum === 1) || (hourNum === 17 && minuteNum === 1)) {
 ```
 
 Modify to your desired times. For example, 8:00 AM and 6:00 PM:
+
 ```javascript
 if ((hourNum === 8 && minuteNum === 0) || (hourNum === 18 && minuteNum === 0)) {
 ```
@@ -307,6 +337,7 @@ if ((hourNum === 8 && minuteNum === 0) || (hourNum === 18 && minuteNum === 0)) {
 ### Change Output Filename Pattern
 
 Find this line (around line 39):
+
 ```javascript
 return `lamb freezer output for log_${year}${month}${day}_${hours}${minutes}${seconds}.xlsx`;
 ```
@@ -316,10 +347,12 @@ Modify the template string to your preference.
 ## File Locations
 
 **Script expects:**
+
 - Input: CSV file (you specify the location)
 - Output: Excel file created in the **same folder** as your input CSV
 
 **Example:**
+
 ```
 If input is:  C:\Freezer\Data\temps.csv
 Output goes:  C:\Freezer\Data\lamb freezer output for log_20250125_143022.xlsx
