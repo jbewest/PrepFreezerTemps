@@ -6,6 +6,10 @@ node_modules/
 *.xlsx
 lamb freezer output for log_*.xlsx
 
+# CSV files (ignore all except sample output)
+*.csv
+!temp log sample output.csv
+
 # Logs
 *.log
 npm-debug.log*
